@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 import core
 import db
 import scan
+import send_daily
 from config import APP_TOKEN
 
 db.init_db()
@@ -182,3 +183,12 @@ async def scan_bill(file: UploadFile = File(...)):
         return scan.extract_items(raw, media_type)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Could not read the bill: {e}")
+
+
+# ---------- trigger the daily WhatsApp summary (called by an outside scheduler) ----------
+@app.post("/run-daily", dependencies=guard)
+def run_daily():
+    try:
+        return send_daily.run()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Daily send failed: {e}")

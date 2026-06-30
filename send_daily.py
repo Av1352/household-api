@@ -47,18 +47,24 @@ def build_message() -> str:
     return message[:900]
 
 
-def main() -> None:
+def run(dry_run: bool = False) -> dict:
+    """Build today's summary and send it. Returns what happened."""
     db.init_db()
     message = build_message()
-    dry_run = "--dry-run" in sys.argv
-
-    print("Message:", message)
     if dry_run:
-        print("(dry run, nothing sent)")
-        return
-
+        return {"message": message, "sent": False}
     resp = send_template([message])
-    print("Sent. Response:", resp)
+    return {"message": message, "sent": True, "response": resp}
+
+
+def main() -> None:
+    dry_run = "--dry-run" in sys.argv
+    result = run(dry_run=dry_run)
+    print("Message:", result["message"])
+    if result["sent"]:
+        print("Sent. Response:", result.get("response"))
+    else:
+        print("(dry run, nothing sent)")
 
 
 if __name__ == "__main__":
