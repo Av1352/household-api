@@ -35,3 +35,7 @@ WHATSAPP_RECIPIENT = os.environ.get("WHATSAPP_RECIPIENT", "")  # e.g. 9198XXXXXX
 WHATSAPP_TEMPLATE = os.environ.get("WHATSAPP_TEMPLATE", "daily_household_summary")
 WHATSAPP_LANG = os.environ.get("WHATSAPP_LANG", "en")
 GRAPH_API_VERSION = os.environ.get("GRAPH_API_VERSION", "v21.0")
+
+# --- Bill scanning (Claude vision) ---
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+SCAN_MODEL = os.environ.get("SCAN_MODEL", "claude-sonnet-4-6")

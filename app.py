@@ -9,12 +9,13 @@ import hmac
 from datetime import date
 from typing import List, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import core
 import db
+import scan
 from config import APP_TOKEN
 
 db.init_db()
@@ -162,3 +163,22 @@ def to_pay():
 @app.get("/report", dependencies=guard)
 def report():
     return core.compute_report(db.all_items())
+
+
+# ---------- scan a bill (Claude vision, key stays server-side) ----------
+@app.post("/scan", dependencies=guard)
+async def scan_bill(file: UploadFile = File(...)):
+    raw = await file.read()
+    name = (file.filename or "").lower()
+    if name.endswith(".png"):
+        media_type = "image/png"
+    elif name.endswith(".webp"):
+        media_type = "image/webp"
+    elif name.endswith(".gif"):
+        media_type = "image/gif"
+    else:
+        media_type = "image/jpeg"
+    try:
+        return scan.extract_items(raw, media_type)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Could not read the bill: {e}")
