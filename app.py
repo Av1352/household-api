@@ -189,6 +189,14 @@ async def scan_bill(file: UploadFile = File(...)):
 @app.post("/run-daily", dependencies=guard)
 def run_daily():
     try:
-        return send_daily.run()
+        result = send_daily.run()
+        out = {
+            "sent": result.get("sent", False),
+            "message": result.get("message", ""),
+        }
+        messages = (result.get("response") or {}).get("messages") or []
+        if messages:
+            out["id"] = messages[0].get("id")
+        return out
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Daily send failed: {e}")
