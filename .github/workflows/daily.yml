@@ -1,0 +1,25 @@
+name: Daily household summary
+
+on:
+  schedule:
+    # 03:30 UTC = 9:00 AM IST. GitHub cron is always in UTC.
+    - cron: "30 3 * * *"
+  # Lets you trigger it manually from the Actions tab to test.
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the server
+        run: curl -s -o /dev/null -m 60 https://household-api-738m.onrender.com/ || true
+
+      - name: Wait for it to be fully awake
+        run: sleep 30
+
+      - name: Send the daily WhatsApp summary
+        run: |
+          curl -s -S -X POST \
+            -H "X-API-Token: ${{ secrets.APP_TOKEN }}" \
+            -m 60 \
+            https://household-api-738m.onrender.com/run-daily
